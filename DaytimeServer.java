@@ -71,8 +71,18 @@ public class DaytimeServer {
 						if (key.isAcceptable() && c == tcpserver) {
 							// Handling TCP Channel
 							SocketChannel client = tcpserver.accept();
+							if (client != null) {
+								// Send daytime message to TCP client
+								client.write(response);
+								client.close();
+							}
 						} else if (key.isReadable() && c == udpserver) {
 							// Handling UDP Channel
+							SocketAddress clientAddress = udpserver
+									.receive(receiveBuffer);
+							if (clientAddress != null) {
+								udpserver.send(response, clientAddress);
+							}
 						}
 					}
 				} catch (java.io.IOException e) {
