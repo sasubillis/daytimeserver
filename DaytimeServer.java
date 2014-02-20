@@ -4,12 +4,16 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.channels.Channel;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.util.Iterator;
+import java.util.Set;
 
 public class DaytimeServer {
 	public static void main(String args[]) {
@@ -54,6 +58,23 @@ public class DaytimeServer {
 					String date = new java.util.Date().toString() + "\r\n";
 					ByteBuffer response = encoder.encode(CharBuffer.wrap(date));
 
+					// get the selectionkey objects from channels
+					Set keys = selector.selectedKeys();
+					for (Iterator i = keys.iterator(); i.hasNext();) {
+						// Get a key from the set, and remove it from the set
+						SelectionKey key = (SelectionKey) i.next();
+						i.remove();
+						// Get the channel associated with the key
+						Channel c = (Channel) key.channel();
+
+						// Check tcp or udp channel has got event?
+						if (key.isAcceptable() && c == tcpserver) {
+							// Handling TCP Channel
+							SocketChannel client = tcpserver.accept();
+						} else if (key.isReadable() && c == udpserver) {
+							// Handling UDP Channel
+						}
+					}
 				} catch (java.io.IOException e) {
 					System.err.println(e);
 				}
